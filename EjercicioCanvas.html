@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Ejercicio Test</title>
+</head>
+<style>
+    canvas{
+        background-color: black;
+    }
+</style>
+<body>
+    
+<canvas id="canvas"> 
+
+</canvas>
+
+<footer id="bien">
+</footer>
+<div id="datos">
+    
+</div>
+</body>
+
+
+<script>
+window.addEventListener("keydown", function(e){
+    if(e.code=="ArrowRight"){
+        controles.derecha = true;
+    }
+    if(e.code=="ArrowLeft"){
+        controles.izquierda = true;
+    }
+})
+
+window.addEventListener("keyup", function(e){
+    controles.allFalse();
+})
+
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+const controles = {
+    arriba : false,
+    abajo : false,
+    derecha : false,
+    izquierda : false,
+    updateAny : function(){
+        this.any = this.arriba && this.abajo && this.derecha && this.izquierda
+    },
+    allFalse : function(){
+        this.arriba = false;
+        this.abajo = false;
+        this.derecha = false;
+        this.izquierda = false;
+    }
+}
+const contorno={
+    width:100,
+    height:300,
+};
+const suelo={
+    x:0,
+    y:280,
+    width: contorno.width,
+    height: contorno.height-280
+}
+const escenarios={
+};
+const jugador={
+    x:2,
+    y:suelo.y-12,
+    width:3,
+    height:12,
+    color: "yellow",
+    vel:1,
+    incercia:0,
+    maxJump: 10,
+    jumpPower: 5,
+    grounded: true,
+    isMoving:false
+};
+const terrenos= [];
+/*
+terrenos.push({
+    x:0,
+    y:260-5,
+    width:30,
+    height:5,
+})
+*/
+terrenos.push({
+    x:70,
+    y:270-5,
+    width:30,
+    height:5,
+})
+canvas.width = contorno.width;
+canvas.height = contorno.height;
+
+setInterval(refreshGame,100);
+function refreshGame(){
+update();
+draw();
+let preX = jugador.x;
+let preY = jugador.y;
+
+//window.requestAnimationFrame(refreshGame);
+}
+//window.requestAnimationFrame(refreshGame);
+
+
+
+function draw(){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    dibujarJugador();
+    dibujarSuelo();
+    dibujarTerrenos();
+}
+
+function update(){
+    checkColision();
+    mando();
+    inercia();
+}
+
+function dibujarJugador(){
+    ctx.fillStyle = "yellow";
+    ctx.fillRect(jugador.x,jugador.y,jugador.width,jugador.height);
+}
+
+function dibujarSuelo(){
+    ctx.fillStyle = "brown";
+    ctx.fillRect(suelo.x,suelo.y,suelo.width,suelo.height);
+}
+
+function dibujarTerrenos(){
+    terrenos.forEach(element => {
+        ctx.fillStyle = "brown";
+        ctx.fillRect(element.x,element.y,element.width,element.height);
+    });
+}
+
+function inercia(){
+    if(!controles.any){
+        jugador.incercia /= 1.2;
+        jugador.x = jugador.x + jugador.incercia;
+        if(Math.abs(jugador.incercia) < 0.3){
+            jugador.incercia = 0;
+            borrarDatos();
+            return;
+        }
+        
+
+    }
+    
+    
+}
+
+function imprimirDatos(d){
+    document.getElementById("datos").textContent = d;
+}
+
+function borrarDatos(){
+    document.getElementById("datos").textContent = "";
+}
+
+function mando(){
+    
+
+
+    if(controles.derecha){
+        jugador.x = jugador.x + jugador.vel;
+        jugador.incercia = jugador.vel;
+    }
+    if(controles.izquierda){
+        jugador.x = jugador.x - jugador.vel;
+        jugador.incercia = -jugador.vel; 
+    }
+}
+
+function saltar(){
+    let ground = jugador.y;
+    let jumpPower = jugador.jumpPower;
+    jugador.y = jugador.y + jumpPower;
+    jugador.grounded = false;
+}
+
+function checkColision(){
+    let colisionXR = jugador.x + jugador.vel;
+    let colisionXL = jugador.x - jugador.vel;
+    let colisionYU = jugador.y - 1;
+    let colisionYD = jugador.y + 1;
+
+    if(colisionXR>(contorno.width-(jugador.vel+4))){
+        jugador.x = contorno.width-(jugador.vel+4)
+        jugador.incercia = 0;
+    }
+    if(colisionXL<1){
+        jugador.x = jugador.vel
+        jugador.incercia = 0;
+    }
+   
+    
+}
+
+function checkColisionConObjetosOTerrenos(){
+    for(let i = 0; i<terrenos.length;i++){
+        let element = terrenos[i];
+        if(jugador.x < element.x + element.width &&
+           jugador.x + jugador.width > element.x &&
+           jugador.y < element.y + element.height &&
+           jugador.y + jugador.height > element.y){
+            jugador.x = preX;
+            jugador.y = preY;
+           return true;
+        }
+    }
+    return false;
+
+}
+document.getElementById("bien").textContent = "bien";
+</script>
+</html>
